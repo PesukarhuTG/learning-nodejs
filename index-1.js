@@ -6,15 +6,20 @@ class Timer extends EventEmitter {
     this.time = 0;
   }
 
-  launchTimer() {
-    setInterval(() => {
-      ++this.time;
-      console.log(`Tick - ${this.time}`);
+  emit(name, ...args) {
+    super.emit(name, ...args);
+    console.log(`${name} - ${++this.time}`);
+    this.launchTimer(name);
+  }
+
+  launchTimer(name) {
+    setTimeout(() => {
+      this.emit(name, this.time);
     }, 1000);
   }
 }
 
 const timer = new Timer();
 
-timer.on('printTimerData', timer.launchTimer);
-timer.emit('printTimerData');
+timer.on('Tick', () => {});
+timer.emit('Tick');
