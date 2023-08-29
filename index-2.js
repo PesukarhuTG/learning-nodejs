@@ -3,30 +3,22 @@ import { EventEmitter } from 'node:events';
 class Message extends EventEmitter {
   constructor() {
     super();
-    this.username = '';
-    this.message = '';
-    this.init();
-  }
-
-  init() {
-    this.on('getMessage', this.receiveMessage);
-
-    // вне задания: для себя протестить работу prependListener
-    this.prependListener('getMessage', () => {
-      console.log('-----');
-      console.log(`Сообщение от пользователя ${this.username} получено`);
-    });
+    this.receiveMessage();
   }
 
   sendMessage(username, message) {
-    this.username = username;
-    this.message = message;
-
     this.emit('getMessage', { username, message });
   }
 
   receiveMessage() {
-    console.log(`Текст сообщения: ${this.message}`);
+    this.on('getMessage', data => {
+      console.log(`Текст сообщения: ${data.message}`);
+    });
+
+    // вне задания: для себя протестить работу prependListener
+    this.prependListener('getMessage', data => {
+      console.log(`-----\nСообщение от пользователя ${data.username} получено`);
+    });
   }
 }
 
