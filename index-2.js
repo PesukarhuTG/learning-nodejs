@@ -1,9 +1,11 @@
 import { EventEmitter } from 'node:events';
 
 class Message extends EventEmitter {
-  constructor() {
+  constructor(init = true) {
     super();
-    this.receiveMessage();
+    if (init) {
+      this.receiveMessage();
+    }
   }
 
   sendMessage(username, message) {
