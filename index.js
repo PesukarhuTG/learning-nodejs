@@ -1,19 +1,19 @@
 import { EventEmitter } from 'node:events';
 import {
-  appendFile,
   stat,
   writeFile,
   copyFile,
   truncate,
+  readFile,
 } from 'node:fs/promises';
 
 class Logger extends EventEmitter {
   constructor(filename, maxSize, init = true) {
     super();
-    this.filename = filename; //имя файла лога 'log.txt'
-    this.maxSize = maxSize; //макс. размер файла лога в байтах 1024
-    this.logQueue = []; //очередь логов
-    this.writing = false; //флаг записи
+    this.filename = filename;
+    this.maxSize = maxSize;
+    this.logQueue = [];
+    this.writing = false;
     init && this.init();
   }
 
@@ -36,15 +36,27 @@ class Logger extends EventEmitter {
 
   async writeLog() {
     try {
-      await writeFile(this.filename, '');
+      let currentFileLog = '';
 
-      const logData = this.logQueue.join('\n');
-      const lastData = this.logQueue[0];
-      await appendFile(this.filename, logData);
-
+      //ЗАПИСЫВАЕМ ФАЙЛ ЛОГА ИЗ МАССИВА
+      const logData = this.logQueue.length ? this.logQueue.join('\n') : '';
       this.logQueue = [];
 
-      this.emit('messageLogged', lastData);
+      // если файл прочитается => он уже существует => данные есть
+      await readFile(this.filename, 'utf8')
+        .then(data => (currentFileLog = data))
+        .catch(err =>
+          console.warn('Упс, файла логирования нет. Создадим! ', err.message),
+        );
+
+      // запись файла: если на предыдущем шаге данные есть,
+      //то к ним сверху добавляем новые из массива, иначе - только новые
+      await writeFile(
+        this.filename,
+        currentFileLog ? `${logData}\n${currentFileLog}` : logData,
+      );
+
+      this.emit('messageLogged', logData);
 
       await this.checkFileSize();
 
@@ -83,9 +95,16 @@ class Logger extends EventEmitter {
 
 const logger = new Logger('log.txt', 1024);
 
-logger.log('Первое сообщение');
-logger.log('Второе сообщение');
-logger.log('Третье сообщение');
-logger.log('Четвертое сообщение');
-logger.log('Пятое сообщение');
-logger.log('Шестое сообщение');
+setTimeout(() => logger.log('Первое сообщение'), 0);
+setTimeout(() => logger.log('Второе сообщение'), 500);
+setTimeout(() => logger.log('Третье сообщение'), 1000);
+setTimeout(() => logger.log('Четвертое сообщение'), 1500);
+setTimeout(() => logger.log('Пятое сообщение'), 2000);
+setTimeout(() => logger.log('Шестое сообщение'), 2500);
+
+// logger.log('Первое сообщение');
+// logger.log('Второе сообщение');
+// logger.log('Третье сообщение');
+// logger.log('Четвертое сообщение');
+// logger.log('Пятое сообщение');
+// logger.log('Шестое сообщение');
