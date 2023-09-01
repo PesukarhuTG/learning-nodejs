@@ -8,12 +8,19 @@ import {
 } from 'node:fs/promises';
 
 class Logger extends EventEmitter {
-  constructor(filename, maxSize) {
+  constructor(filename, maxSize, init = true) {
     super();
     this.filename = filename; //имя файла лога 'log.txt'
     this.maxSize = maxSize; //макс. размер файла лога в байтах 1024
     this.logQueue = []; //очередь логов
     this.writing = false; //флаг записи
+    init && this.init();
+  }
+
+  init() {
+    this.on('messageLogged', message => {
+      console.log('Записано сообщение:', message);
+    });
   }
 
   log(message) {
@@ -75,10 +82,6 @@ class Logger extends EventEmitter {
 }
 
 const logger = new Logger('log.txt', 1024);
-
-logger.on('messageLogged', message => {
-  console.log('Записано сообщение:', message);
-});
 
 logger.log('Первое сообщение');
 logger.log('Второе сообщение');
