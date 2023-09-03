@@ -43,11 +43,8 @@ class Logger extends EventEmitter {
       this.logQueue = [];
 
       // если файл прочитается => он уже существует => данные есть
-      await readFile(this.filename, 'utf8')
-        .then(data => (currentFileLog = data))
-        .catch(err =>
-          console.warn('Упс, файла логирования нет. Создадим! ', err.message),
-        );
+      // если не прочитается - catch вернет пустую строку и пойдет дальше
+      currentFileLog = await readFile(this.filename, 'utf8').catch(() => '');
 
       // запись файла: если на предыдущем шаге данные есть,
       //то к ним сверху добавляем новые из массива, иначе - только новые
