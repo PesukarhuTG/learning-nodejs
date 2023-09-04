@@ -10,15 +10,16 @@ export const createCommonTextFile = async (path, fileName) => {
       const currentFilePath = `${path}/${file}`;
       const stats = await stat(currentFilePath);
 
-      if (stats.isDirectory()) {
-        //await createCommonTextFile(currentFilePath, fileName);
-        console.log('Есть вложенная папуля');
-      } else if (stats.isFile() && file.endsWith('txt')) {
+      if (stats.isFile() && file.endsWith('txt')) {
         const rStream = createReadStream(currentFilePath);
 
+        wStream.write(`[${file}]\n`);
+
         for await (const chunk of rStream) {
-          wStream.write(`[${file}]\n${chunk}\n`);
+          wStream.write(chunk);
         }
+
+        wStream.write('\n');
 
         return wStream;
       }
